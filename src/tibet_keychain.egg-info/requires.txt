@@ -1,0 +1,11 @@
+cryptography>=42.0
+
+[cbom]
+tibet-cbom>=0.1.1
+
+[full]
+tibet-drop>=0.3.0
+tibet-cbom>=0.1.1
+
+[sealed]
+tibet-drop>=0.3.0

@@ -1,0 +1,3 @@
+[console_scripts]
+tibet-keychain = tibet_keychain.cli:main
+tkc = tibet_keychain.cli:main

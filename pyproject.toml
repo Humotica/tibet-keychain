@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tibet-keychain"
+version = "0.1.0"
+description = "Causal-aware secret custody — where secrets live, how they moved, who touched them. Part of the TIBET vault family (tibet-vault = WHEN, tibet-keychain = WHERE/HOW, tibet-sam = WHY, tibet-gateway = where ACT is performed)."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Jasper van de Meent", email = "info@humotica.com"},
+    {name = "Root AI", email = "root_idd@humotica.nl"},
+    {name = "Codex", email = "codex@humotica.nl"},
+]
+keywords = [
+    "tibet", "keychain", "secret-custody", "vault", "credential",
+    "causal", "audit", "rotation", "exposure", "cbom",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "cryptography>=42.0",
+]
+
+[project.optional-dependencies]
+# Bridge to tibet-drop for sealed envelope storage
+sealed = [
+    "tibet-drop>=0.3.0",
+]
+# Bridge to tibet-cbom for timeline rendering
+cbom = [
+    "tibet-cbom>=0.1.1",
+]
+# Full stack
+full = [
+    "tibet-drop>=0.3.0",
+    "tibet-cbom>=0.1.1",
+]
+
+[project.scripts]
+tibet-keychain = "tibet_keychain.cli:main"
+tkc = "tibet_keychain.cli:main"
+
+[project.urls]
+Homepage = "https://humotica.com"
+Repository = "https://github.com/jaspertvdm/tibet-keychain"

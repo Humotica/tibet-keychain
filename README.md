@@ -1,0 +1,161 @@
+# tibet-keychain
+
+> **Causal-aware secret custody — where secrets live, how they moved, who touched them.**
+
+`tibet-keychain` is part of the **TIBET vault family** — four primitives
+that answer four different questions about secrets, keys, tokens, and
+credentials:
+
+```
+═══════════════════════════════════════════════════════════════
+  THE VAULT FAMILY
+═══════════════════════════════════════════════════════════════
+
+  tibet-vault       WHEN        temporal trigger
+                                "release on date / dead-man-switch"
+
+  tibet-keychain    WHERE/HOW   custody + timeline       ← this package
+                                "where this secret lives, how it moved"
+
+  tibet-sam         WHY         intent + scope authorization
+                                "why this one specific act is allowed"
+
+  tibet-gateway     WHERE-EXEC  execution boundary
+                                "where the act is safely performed"
+═══════════════════════════════════════════════════════════════
+```
+
+## Why a separate keychain primitive?
+
+Traditional secret stores answer:
+
+- where is the key
+- can this caller read it
+
+`tibet-keychain` answers:
+
+- where is the key (still)
+- **how did it get here** (= causal history)
+- **who touched it** (= custody timeline)
+- **was it exposed** (= rotation triggers)
+- **how does the chain walk back** (= CBOM-compatible)
+
+That makes `tibet-keychain` the natural foundation for any system
+that has to prove not only "I have the key" but "I know exactly
+how this key entered my custody, who touched it on the way, and
+under which authority each transition happened".
+
+## Core idea
+
+Each secret is stored as a sealed `.tza` continuity object with:
+
+- encrypted secret payload (= the actual material)
+- vault-metadata (issuer / scope / created_at / expires_at)
+- custody-transition (owner ↔ custodian ↔ active-operator)
+- exposure_state + rotation_required flag
+- timeline of all `secret-*` events
+
+The secret material itself is encrypted and tightly scoped. The
+surrounding continuity metadata remains auditable.
+
+## Secret types
+
+```
+api_key                 oauth_token             signing_key
+service_account_cred    pypi_token              crates_token
+github_pat              ssh_key                 root_password
+smart_contract_signer   tls_cert                webhook_signer
+```
+
+## Timeline events
+
+```
+secret-created          secret-imported         secret-sealed
+secret-unsealed         secret-proxied          secret-delegated
+secret-exposed          secret-rotated          secret-revoked
+secret-archived
+```
+
+Each event carries:
+
+- actor identity (= who)
+- action_id + parent_action_id (= chain link)
+- timestamp
+- actor class (= human / machine / external / mcp-server / gateway / system)
+- relevant policy decisions (= scope / authority-shift)
+
+## Coupling with the rest of the family
+
+```
+                                tibet-keychain
+                                  (custody, timeline)
+                                      │
+                                      ↓ secret-proxied event
+                                      │
+              ┌───────────────────────┴───────────────────────┐
+              ▼                                                ▼
+        tibet-sam                                       tibet-gateway
+        (why this act is OK)                            (where it happens)
+              ↓                                                ↑
+         intent + scope                                    break-seal,
+         constraint sealed                                 execute,
+         in one-shot .tza                                  destroy-session
+              ↓                                                ↑
+              └─────────── handed to ──────────────────────────┘
+                                      ↓
+                                tibet-continuityd
+                                audit JSONL
+                                      ↓
+                                tibet-cbom
+                                timeline walk
+```
+
+## Why this beats traditional secret stores
+
+| Property                       | HashiCorp Vault | tibet-keychain |
+|--------------------------------|-----------------|----------------|
+| Encrypted at rest              | ✓               | ✓              |
+| ACL / policy controlled        | ✓               | ✓              |
+| Causal history of secret       | ✗               | ✓              |
+| Custody-transition chain       | ✗               | ✓              |
+| Exposure events recorded       | partial         | ✓              |
+| Audit walkable cross-bundle    | ✗               | ✓              |
+| Identity-bound rotation chain  | ✗               | ✓              |
+| Regulator-auditable timeline   | partial         | ✓              |
+
+## Use cases
+
+**Infrastructure**: SSH keys, database credentials, root access —
+all stored with custody chain, rotated through signed transitions.
+
+**Agent workflows**: PyPI tokens, crates.io tokens, GitHub PATs —
+agents never see them; they request a SAM capsule that the gateway
+executes against, the keychain logs the request.
+
+**Smart contracts**: signing keys with explicit "who can request a
+signing capsule for which contract address" policy, every signing
+event in the timeline.
+
+**Compliance evidence**: regulator asks "who could have signed this?
+who actually did?" — the keychain timeline answers both.
+
+## Install
+
+```bash
+pip install tibet-keychain[full]
+```
+
+This pulls `tibet-drop` (= sealed envelope substrate) and `tibet-cbom`
+(= timeline renderer) as soft dependencies.
+
+## Status
+
+**v0.1.0** — package skeleton + spec. Implementation track for full
+secret storage + sealed-bundle integration follows; designed to land
+in time for IETF spec referencing and Marco van Hurne / W3C demos.
+
+Spec source: `/srv/jtel-stack/hersenspinsels/tibet-vault-key-custody-and-sealed-secret-timeline-2026-05-12.md`
+
+## License
+
+MIT — Humotica + Root AI + Codex (2026)
