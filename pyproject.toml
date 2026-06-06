@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tibet-keychain"
-version = "0.1.0"
+version = "0.1.2"
 description = "Causal-aware secret custody — where secrets live, how they moved, who touched them. Part of the TIBET vault family (tibet-vault = WHEN, tibet-keychain = WHERE/HOW, tibet-sam = WHY, tibet-gateway = where ACT is performed)."
 readme = "README.md"
 license = {text = "MIT"}
@@ -34,6 +34,8 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
+    "jis-core>=0.4.0",
+    "tibet-core>=0.5.0",
     "cryptography>=42.0",
 ]
 
